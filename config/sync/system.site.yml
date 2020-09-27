@@ -1,0 +1,14 @@
+uuid: 6436ab2d-0510-4781-bb71-bde0ed1cef44
+name: 'Gizra assignment'
+mail: service@drupal.com.ua
+slogan: ''
+page:
+  403: ''
+  404: ''
+  front: /node
+admin_compact_mode: false
+weight_select_max: 100
+langcode: en
+default_langcode: en
+_core:
+  default_config_hash: yTxtFqBHnEWxQswuWvkjE8mKw2t8oKuCL1q8KnfHuGE
