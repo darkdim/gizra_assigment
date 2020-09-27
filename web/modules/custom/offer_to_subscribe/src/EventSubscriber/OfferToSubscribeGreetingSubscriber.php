@@ -70,23 +70,20 @@ class OfferToSubscribeGreetingSubscriber implements EventSubscriberInterface {
   public function onRequest(GetResponseEvent $event) {
     /** @var \Drupal\user\UserInterface $user */
     $user = $this->entityTypeManager->load($this->currentUser->id());
-    $current_user_roles = $user->getRoles();
 
     if ($user->hasRole('administrator') || $user->isAnonymous()) {
       return;
     }
 
-    if ($user->isAuthenticated()) {
-      if ($node = $this->routeMatch->getParameter('node')) {
-        $type_name = $node->bundle();
-        if ($type_name == 'group') {
-          $parameters = [
-            'entity_type_id' => '',
-            'group' => '',
-          ];
-          $message = $this->t('Hi %user_name, click <a href=":link">here</a> if you would like to subscribe to this group called %group_title', ['%user_name' => $this->currentUser->getAccountName(), '%group_title' => $node->getTitle(), ':link' => Url::fromRoute('og.subscribe', $parameters)]);
-          $this->messenger()->addMessage($message);
-        }
+    if ($user->isAuthenticated() && $node = $this->routeMatch->getParameter('node')) {
+      $type_name = $node->bundle();
+      if ($type_name == 'group') {
+        $parameters = [
+          'entity_type_id' => $node->getEntityTypeId(),
+          'group' => $node->id(),
+        ];
+        $message = $this->t('Hi %user_name, click <a href=":link">here</a> if you would like to subscribe to this group called %group_title', ['%user_name' => $this->currentUser->getAccountName(), '%group_title' => $node->getTitle(), ':link' => Url::fromRoute('og.subscribe', $parameters)->toString()]);
+        $this->messenger()->addMessage($message);
       }
     }
 
