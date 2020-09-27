@@ -1,0 +1,9 @@
+name: Offer to subscribe
+description: Whenever a registered user will visit the group, it should offer to subscribe that user by greeting them with their name.
+package: Custom
+
+core: 8.x
+type: module
+
+dependencies:
+  - og:og
