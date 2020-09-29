@@ -4,7 +4,6 @@
 namespace Drupal\offer_to_subscribe\EventSubscriber;
 
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountProxyInterface;
