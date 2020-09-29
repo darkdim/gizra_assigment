@@ -1,6 +1,6 @@
 services:
   offer_to_subscribe.greeting_subscriber:
     class: Drupal\offer_to_subscribe\EventSubscriber\OfferToSubscribeGreetingSubscriber
-    arguments: ['@current_user', '@current_route_match', '@entity_type.manager']
+    arguments: ['@current_user', '@current_route_match']
     tags:
       - { name: event_subscriber }

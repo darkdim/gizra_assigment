@@ -16,7 +16,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Class OfferToSubscribeGreetingSubscriber
- * @todo add description class
+ * Defines the method when subscribing to a group visit.
  *
  * @package Drupal\offer_to_subscribe\EventSubscriber
  */
@@ -35,24 +35,14 @@ class OfferToSubscribeGreetingSubscriber implements EventSubscriberInterface {
   protected $routeMatch;
 
   /**
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * OfferToSubscribeGreetingSubscriber constructor.
    *
    * @param \Drupal\Core\Session\AccountProxyInterface $currentUser
    * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(AccountProxyInterface $currentUser, RouteMatchInterface $routeMatch, EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(AccountProxyInterface $currentUser, RouteMatchInterface $routeMatch) {
     $this->currentUser = $currentUser;
     $this->routeMatch = $routeMatch;
-    $this->entityTypeManager = $entityTypeManager->getStorage('user');
   }
 
   /**
@@ -65,18 +55,15 @@ class OfferToSubscribeGreetingSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * @todo add description method
+   * The method produces a proposal to issue group membership.
    */
   public function onRequest(GetResponseEvent $event) {
-    /** @var \Drupal\user\UserInterface $user */
-    $user = $this->entityTypeManager->load($this->currentUser->id());
-    $current_user_roles = $user->getRoles();
 
-    if ($user->hasRole('administrator') || $user->isAnonymous()) {
+    if ($this->currentUser->hasRole('administrator') || $this->currentUser->isAnonymous()) {
       return;
     }
 
-    if ($user->isAuthenticated()) {
+    if ($this->currentUser->isAuthenticated()) {
       if ($node = $this->routeMatch->getParameter('node')) {
         $type_name = $node->bundle();
         if ($type_name == 'group') {
@@ -84,7 +71,13 @@ class OfferToSubscribeGreetingSubscriber implements EventSubscriberInterface {
             'entity_type_id' => '',
             'group' => '',
           ];
-          $message = $this->t('Hi %user_name, click <a href=":link">here</a> if you would like to subscribe to this group called %group_title', ['%user_name' => $this->currentUser->getAccountName(), '%group_title' => $node->getTitle(), ':link' => Url::fromRoute('og.subscribe', $parameters)]);
+          $message = $this->t('Hi %user_name, click <a href=":link">here</a> if you would like to subscribe to this group called %group_title',
+            [
+              '%user_name' => $this->currentUser->getAccountName(),
+              '%group_title' => $node->getTitle(),
+              ':link' => Url::fromRoute('og.subscribe', $parameters),
+            ]
+          );
           $this->messenger()->addMessage($message);
         }
       }
