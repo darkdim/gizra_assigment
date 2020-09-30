@@ -9,6 +9,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
+use Drupal\og\Og;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -58,27 +59,26 @@ class OfferToSubscribeGreetingSubscriber implements EventSubscriberInterface {
    */
   public function onRequest(GetResponseEvent $event) {
 
-    if ($this->currentUser->hasRole('administrator') || $this->currentUser->isAnonymous()) {
+    $user_roles = $this->currentUser->getRoles();
+    if (in_array('administrator', $user_roles) || $this->currentUser->isAnonymous()) {
       return;
     }
 
-    if ($this->currentUser->isAuthenticated()) {
-      if ($node = $this->routeMatch->getParameter('node')) {
-        $type_name = $node->bundle();
-        if ($type_name == 'group') {
-          $parameters = [
-            'entity_type_id' => '',
-            'group' => '',
-          ];
-          $message = $this->t('Hi %user_name, click <a href=":link">here</a> if you would like to subscribe to this group called %group_title',
-            [
-              '%user_name' => $this->currentUser->getAccountName(),
-              '%group_title' => $node->getTitle(),
-              ':link' => Url::fromRoute('og.subscribe', $parameters),
-            ]
-          );
-          $this->messenger()->addMessage($message);
-        }
+    if ($this->currentUser->isAuthenticated() && ($node = $this->routeMatch->getParameter('node'))) {
+      $type_name = $node->bundle();
+      if ($type_name == 'group' && !Og::isMember($node, $this->currentUser)) {
+        $parameters = [
+          'entity_type_id' => $node->getEntityTypeId(),
+          'group' => $node->id(),
+        ];
+        $message = $this->t('Hi %user_name, click <a href=":link">here</a> if you would like to subscribe to this group called %group_title',
+          [
+            '%user_name' => $this->currentUser->getAccountName(),
+            '%group_title' => $node->getTitle(),
+            ':link' => Url::fromRoute('og.subscribe', $parameters)->toString(),
+          ]
+        );
+        $this->messenger()->addMessage($message);
       }
     }
 
